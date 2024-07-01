@@ -12,7 +12,17 @@ export class AppController {
     @Query() { visitor_name }: VisitorNameDto,
     @Req() request: Request,
   ) {
-    const ip = request.ip;
+    const ip = this.getClientIp(request);
+    console.log(ip);
     return this.appService.getHello(visitor_name, ip);
+  }
+
+  private getClientIp(request: Request): string {
+    const xForwardedFor = request.headers['x-forwarded-for'];
+    if (xForwardedFor) {
+      const ipArray = (xForwardedFor as string).split(',');
+      return ipArray[ipArray.length - 1].trim();
+    }
+    return request.ip;
   }
 }
