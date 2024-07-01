@@ -13,7 +13,6 @@ export class AppController {
     @Req() request: Request,
   ) {
     const ip = this.getClientIp(request);
-    console.log(ip);
     return this.appService.getHello(visitor_name, ip);
   }
 
@@ -21,8 +20,12 @@ export class AppController {
     const xForwardedFor = request.headers['x-forwarded-for'];
     if (xForwardedFor) {
       const ipArray = (xForwardedFor as string).split(',');
-      return ipArray[ipArray.length - 1].trim();
+      return ipArray[0].trim();
     }
-    return request.ip;
+    return (
+      request.connection.remoteAddress ||
+      request.socket.remoteAddress ||
+      '127.0.0.1'
+    );
   }
 }

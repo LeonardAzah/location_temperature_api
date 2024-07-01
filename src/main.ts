@@ -5,9 +5,8 @@ import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.getHttpAdapter().getInstance().set('trust proxy', true);
+  const expressApp = app.getHttpAdapter().getInstance() as express.Application;
+  expressApp.set('trust proxy', true);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

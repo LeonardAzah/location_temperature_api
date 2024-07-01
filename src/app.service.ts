@@ -16,7 +16,6 @@ export class AppService {
           },
         },
       );
-      console.log(locationResponse);
 
       if (
         locationResponse.status !== 200 ||
