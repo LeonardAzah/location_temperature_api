@@ -3,46 +3,39 @@ import axios from 'axios';
 
 @Injectable()
 export class AppService {
-  private readonly ACCUWEATHER_API_KEY = process.env.WEATHER_API_KEY;
-  private readonly LOCATIONAPI_KEY = process.env.LOCATION_API_KEY;
+  private readonly WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+  private readonly LOCATION_API_KEY = process.env.LOCATION_API_KEY;
 
   async getHello(visitorName: string, clientIp: string) {
     try {
-      const locationData = await axios.get(
+      const locationResponse = await axios.get(
         `https://api.ipgeolocation.io/ipgeo?`,
         {
           params: {
-            apikey: this.LOCATIONAPI_KEY,
+            apiKey: this.LOCATION_API_KEY,
             ip: clientIp,
           },
         },
       );
-      const locationResponse = await axios.get(
-        `http://dataservice.accuweather.com/locations/v1/cities/ipaddress`,
-        {
-          params: {
-            apikey: this.ACCUWEATHER_API_KEY,
-            q: clientIp,
-          },
-        },
-      );
-      if (
-        locationResponse.status !== 200 ||
-        !locationResponse.data.EnglishName
-      ) {
+
+      if (locationResponse.status !== 200 || !locationResponse.data.city) {
         throw new HttpException(
           'Unable to fetch location data',
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-      const location: string = locationData.data.city;
-      const locationKey: string = locationResponse.data.Key;
+      const location: string = locationResponse.data.city;
+      const lat = locationResponse.data.latitude;
+      const lon = locationResponse.data.longitude;
 
       const weatherData = await axios.get(
-        `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}`,
+        `https://api.openweathermap.org/data/2.5/weather`,
         {
           params: {
-            apikey: this.ACCUWEATHER_API_KEY,
+            lat,
+            lon,
+            apikey: this.WEATHER_API_KEY,
+            units: 'metric',
           },
         },
       );
@@ -52,13 +45,11 @@ export class AppService {
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-      const temperature: number = weatherData.data[0].Temperature.Metric.Value;
+      const temperature: number = weatherData.data.main.temp;
 
       return {
         client_ip: clientIp,
         location: location,
-        key: locationResponse.data.Key,
-        location_key: locationKey,
         greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${location}`,
       };
     } catch (error) {
