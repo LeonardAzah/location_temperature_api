@@ -48,6 +48,8 @@ export class AppService {
       return {
         client_ip: clientIp,
         location: location,
+        lat: locationResponse.data.GeoPosition.Latitude,
+        lon: locationResponse.data.GeoPosition.Longitude,
         location_key: locationKey,
         greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${location}`,
       };
