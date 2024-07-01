@@ -4,9 +4,19 @@ import axios from 'axios';
 @Injectable()
 export class AppService {
   private readonly ACCUWEATHER_API_KEY = process.env.WEATHER_API_KEY;
+  private readonly LOCATIONAPI_KEY = process.env.LOCATION_API_KEY;
 
   async getHello(visitorName: string, clientIp: string) {
     try {
+      const locationData = await axios.get(
+        `https://api.ipgeolocation.io/ipgeo?`,
+        {
+          params: {
+            apikey: this.LOCATIONAPI_KEY,
+            ip: clientIp,
+          },
+        },
+      );
       const locationResponse = await axios.get(
         `http://dataservice.accuweather.com/locations/v1/cities/ipaddress`,
         {
@@ -16,7 +26,6 @@ export class AppService {
           },
         },
       );
-      console.log(locationResponse);
       if (
         locationResponse.status !== 200 ||
         !locationResponse.data.EnglishName
@@ -26,7 +35,7 @@ export class AppService {
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-      const location: string = locationResponse.data.EnglishName;
+      const location: string = locationData.data.city;
       const locationKey: string = locationResponse.data.Key;
 
       const weatherData = await axios.get(
@@ -48,8 +57,7 @@ export class AppService {
       return {
         client_ip: clientIp,
         location: location,
-        lat: locationResponse.data.GeoPosition.Latitude,
-        lon: locationResponse.data.GeoPosition.Longitude,
+        key: locationResponse.data.Key,
         location_key: locationKey,
         greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${location}`,
       };
