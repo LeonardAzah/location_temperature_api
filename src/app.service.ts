@@ -16,7 +16,7 @@ export class AppService {
           },
         },
       );
-
+      console.log(locationResponse);
       if (
         locationResponse.status !== 200 ||
         !locationResponse.data.EnglishName
@@ -48,6 +48,7 @@ export class AppService {
       return {
         client_ip: clientIp,
         location: location,
+        location_key: locationKey,
         greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${location}`,
       };
     } catch (error) {
